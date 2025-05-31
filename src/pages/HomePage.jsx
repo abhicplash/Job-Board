@@ -1,27 +1,60 @@
-import { useQuery } from "@tanstack/react-query";
-import { fetchJobs } from "../services/jobsApi";
+import React, { useEffect, useState } from "react";
+import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import { Link } from "react-router-dom";
+import { db } from "../services/firebase";
 
-export default function HomePage() {
-  const { data: jobs, isLoading, error } = useQuery({
-    queryKey: ["jobs"],
-    queryFn: fetchJobs
-  });
+const HomePage = () => {
+  const [jobs, setJobs] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  if (isLoading) return <p>Loading jobs...</p>;
-  if (error) return <p>Failed to load jobs.</p>;
+  useEffect(() => {
+    const fetchJobs = async () => {
+      setLoading(true);
+      const q = query(collection(db, "jobs"), orderBy("postedAt", "desc"));
+      const querySnapshot = await getDocs(q);
+      const jobsData = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setJobs(jobsData);
+      setLoading(false);
+    };
+
+    fetchJobs();
+  }, []);
+
+  if (loading) return <p>Loading jobs...</p>;
+  if (jobs.length === 0) return <p>No jobs available right now.</p>;
 
   return (
-    <div className="container">
-      <h2>Latest Jobs</h2>
-      {jobs.map((job) => (
-        <div key={job.id} style={{ border: "1px solid #ccc", padding: "1rem", margin: "1rem 0" }}>
-          <Link to={`/jobs/${job.id}`}>
-            <h3>{job.title}</h3>
-            <p>{job.company} – {job.location} ({job.type})</p>
-          </Link>
-        </div>
-      ))}
+    <div>
+      <h1>Available Jobs</h1>
+      <ul style={{ listStyleType: "none", padding: 0 }}>
+        {jobs.map((job) => (
+          <li
+            key={job.id}
+            style={{
+              border: "1px solid #ddd",
+              padding: "15px",
+              marginBottom: "15px",
+              borderRadius: "8px",
+            }}
+          >
+            <Link to={`/jobs/${job.id}`} style={{ textDecoration: "none", color: "black" }}>
+              <h3>{job.title}</h3>
+              <p>
+                <strong>Company:</strong> {job.company}
+              </p>
+              <p>
+                <strong>Location:</strong> {job.location}
+              </p>
+              <p>{job.description?.substring(0, 100)}...</p>
+            </Link>
+          </li>
+        ))}
+      </ul>
     </div>
   );
-}
+};
+
+export default HomePage;

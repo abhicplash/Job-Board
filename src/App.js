@@ -6,6 +6,8 @@ import JobPage from "./pages/JobPage";
 import Navbar from "./components/Navbar";
 import PrivateRoute from "./routes/PrivateRoute";
 import Dashboard from "./pages/Dashboard";
+import AdminJobs from "./pages/AdminJobs";
+import RequireAdmin from "./components/RequireAdmin";
 
 export default function App() {
   return (
@@ -21,6 +23,14 @@ export default function App() {
             <PrivateRoute>
               <JobPage />
             </PrivateRoute>
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <RequireAdmin>
+              <AdminJobs /> {/* your admin job management component */}
+            </RequireAdmin>
           }
         />
         <Route
