@@ -5,6 +5,7 @@ import SignupPage from "./pages/SignupPage";
 import JobPage from "./pages/JobPage";
 import Navbar from "./components/Navbar";
 import PrivateRoute from "./routes/PrivateRoute";
+import Dashboard from "./pages/Dashboard";
 
 export default function App() {
   return (
@@ -19,6 +20,14 @@ export default function App() {
           element={
             <PrivateRoute>
               <JobPage />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/dashboard"
+          element={
+            <PrivateRoute>
+              <Dashboard />
             </PrivateRoute>
           }
         />
