@@ -13,7 +13,11 @@ const Dashboard = () => {
       where("userId", "==", user.uid)
     );
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    return querySnapshot.docs
+      .map((doc) => ({ id: doc.id, ...doc.data() }))
+      .sort(
+        (a, b) => (b.appliedAt?.seconds || 0) - (a.appliedAt?.seconds || 0)
+      );
   };
 
   const { data: applications, isLoading } = useQuery({
@@ -31,17 +35,31 @@ const Dashboard = () => {
       {applications?.length === 0 ? (
         <p>You haven’t applied to any jobs yet.</p>
       ) : (
-        <ul>
-          {applications.map(app => (
-            <li key={app.id} style={{ marginBottom: "10px" }}>
-              <strong>{app.jobTitle}</strong> at {app.company}  
-              <br />
-              Applied on:{" "}
-              {app.appliedAt?.seconds
-                ? new Date(app.appliedAt.seconds * 1000).toLocaleDateString()
-                : "N/A"}
-            </li>
-          ))}
+        <ul style={{ listStyle: "none", padding: 0 }}>
+          {applications.map((app) => {
+            const appliedDate = app.appliedAt?.toDate?.()
+              ? app.appliedAt.toDate().toLocaleDateString()
+              : app.appliedAt?.seconds
+              ? new Date(app.appliedAt.seconds * 1000).toLocaleDateString()
+              : "N/A";
+
+            return (
+              <li
+                key={app.id}
+                style={{
+                  marginBottom: "16px",
+                  padding: "12px",
+                  border: "1px solid #ccc",
+                  borderRadius: "8px",
+                  backgroundColor: "#f9f9f9",
+                }}
+              >
+                <strong>{app.jobTitle}</strong> at {app.company}
+                <br />
+                <small>Applied on: {appliedDate}</small>
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>
