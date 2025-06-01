@@ -1,177 +1,107 @@
-import React, { useEffect, useState } from "react";
-import {
-  collection,
-  addDoc,
-  getDocs,
-  deleteDoc,
-  doc,
-  updateDoc,
-  serverTimestamp,
-} from "firebase/firestore";
+import React, { useState, useEffect } from "react";
 import { db } from "../services/firebase";
+import { collection, addDoc, getDocs, Timestamp } from "firebase/firestore";
 
-const AdminJobs = () => {
+export default function AdminJobs() {
   const [jobs, setJobs] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  // Form state for adding/editing
-  const [form, setForm] = useState({
-    id: null, // if editing, this has job id, else null
+  const [newJob, setNewJob] = useState({
     title: "",
     company: "",
     location: "",
     description: "",
   });
 
-  // Fetch all jobs on mount
-  const fetchJobs = async () => {
-    setLoading(true);
-    const querySnapshot = await getDocs(collection(db, "jobs"));
-    const jobsData = querySnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
-    setJobs(jobsData);
-    setLoading(false);
-  };
-
+  // Fetch existing jobs
   useEffect(() => {
+    const fetchJobs = async () => {
+      const querySnapshot = await getDocs(collection(db, "jobs"));
+      const jobsData = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setJobs(jobsData);
+    };
+
     fetchJobs();
   }, []);
 
-  // Handle input change
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    setNewJob({ ...newJob, [e.target.name]: e.target.value });
   };
 
-  // Add or Update job
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const { id, title, company, location, description } = form;
-
-    if (!title || !company || !location || !description) {
-      alert("Please fill all fields");
-      return;
-    }
-
-    if (id) {
-      // Update job
-      const jobRef = doc(db, "jobs", id);
-      await updateDoc(jobRef, {
-        title,
-        company,
-        location,
-        description,
-      });
-      alert("Job updated successfully");
-    } else {
-      // Add new job
+    try {
       await addDoc(collection(db, "jobs"), {
-        title,
-        company,
-        location,
-        description,
-        postedAt: serverTimestamp(),
+        ...newJob,
+        createdAt: Timestamp.now(),
       });
-      alert("Job added successfully");
+      alert("Job added!");
+      setNewJob({ title: "", company: "", location: "", description: "" });
+
+      // Reload job list
+      const updatedJobs = await getDocs(collection(db, "jobs"));
+      const jobsData = updatedJobs.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setJobs(jobsData);
+    } catch (err) {
+      console.error("Failed to add job:", err);
+      alert("Error adding job");
     }
-
-    // Reset form & reload jobs
-    setForm({ id: null, title: "", company: "", location: "", description: "" });
-    fetchJobs();
   };
-
-  // Delete job
-  const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this job?")) {
-      await deleteDoc(doc(db, "jobs", id));
-      alert("Job deleted");
-      fetchJobs();
-    }
-  };
-
-  // Edit job (populate form)
-  const handleEdit = (job) => {
-    setForm({
-      id: job.id,
-      title: job.title,
-      company: job.company,
-      location: job.location,
-      description: job.description,
-    });
-  };
-
-  if (loading) return <p>Loading jobs...</p>;
 
   return (
-    <div>
-      <h1>Admin Panel - Manage Jobs</h1>
-
+    <div style={{ padding: "20px" }}>
+      <h2>Add New Job</h2>
       <form onSubmit={handleSubmit} style={{ marginBottom: "20px" }}>
-        <h3>{form.id ? "Edit Job" : "Add New Job"}</h3>
-
         <input
           type="text"
           name="title"
-          placeholder="Job Title"
-          value={form.title}
+          value={newJob.title}
           onChange={handleChange}
+          placeholder="Job Title"
           required
         />
         <br />
         <input
           type="text"
           name="company"
-          placeholder="Company"
-          value={form.company}
+          value={newJob.company}
           onChange={handleChange}
+          placeholder="Company"
           required
         />
         <br />
         <input
           type="text"
           name="location"
-          placeholder="Location"
-          value={form.location}
+          value={newJob.location}
           onChange={handleChange}
+          placeholder="Location"
           required
         />
         <br />
         <textarea
           name="description"
-          placeholder="Job Description"
-          value={form.description}
+          value={newJob.description}
           onChange={handleChange}
+          placeholder="Job Description"
           required
         />
         <br />
-        <button type="submit">{form.id ? "Update Job" : "Add Job"}</button>
-        {form.id && (
-          <button
-            type="button"
-            onClick={() =>
-              setForm({ id: null, title: "", company: "", location: "", description: "" })
-            }
-          >
-            Cancel
-          </button>
-        )}
+        <button type="submit">Add Job</button>
       </form>
 
-      <h3>Jobs List</h3>
-      {jobs.length === 0 && <p>No jobs available.</p>}
+      <h3>Existing Jobs</h3>
       <ul>
         {jobs.map((job) => (
-          <li key={job.id} style={{ marginBottom: "10px" }}>
-            <strong>{job.title}</strong> at <em>{job.company}</em> — {job.location}
-            <br />
-            <button onClick={() => handleEdit(job)}>Edit</button>{" "}
-            <button onClick={() => handleDelete(job.id)}>Delete</button>
+          <li key={job.id}>
+            <strong>{job.title}</strong> at {job.company} – {job.location}
           </li>
         ))}
       </ul>
     </div>
   );
-};
-
-export default AdminJobs;
+}

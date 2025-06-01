@@ -1,6 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { doc, getDoc, collection, addDoc, query, where, getDocs, serverTimestamp } from "firebase/firestore";
+import {
+  doc,
+  getDoc,
+  collection,
+  addDoc,
+  query,
+  where,
+  getDocs,
+  serverTimestamp,
+} from "firebase/firestore";
 import { db } from "../services/firebase";
 import { useAuth } from "../features/auth/AuthContext";
 
@@ -20,15 +29,15 @@ const JobPage = () => {
         setJob({ id: jobSnap.id, ...jobSnap.data() });
       }
 
-      // Check if already applied
+      // Check if the user already applied
       if (user) {
         const q = query(
           collection(db, "applications"),
           where("userId", "==", user.uid),
           where("jobId", "==", id)
         );
-        const appliedSnap = await getDocs(q);
-        setApplied(!appliedSnap.empty);
+        const querySnapshot = await getDocs(q);
+        setApplied(!querySnapshot.empty);
       }
 
       setLoading(false);
@@ -38,7 +47,10 @@ const JobPage = () => {
   }, [id, user]);
 
   const handleApply = async () => {
-    if (!user) return alert("Please log in to apply.");
+    if (!user) {
+      alert("Please log in to apply.");
+      return;
+    }
 
     try {
       await addDoc(collection(db, "applications"), {
@@ -51,12 +63,12 @@ const JobPage = () => {
       setApplied(true);
       alert("Application submitted successfully!");
     } catch (error) {
-      console.error("Failed to apply:", error);
-      alert("Something went wrong. Try again.");
+      console.error("Error applying:", error);
+      alert("Failed to apply. Please try again.");
     }
   };
 
-  if (loading) return <p>Loading job details...</p>;
+  if (loading) return <p>Loading job...</p>;
   if (!job) return <p>Job not found.</p>;
 
   return (
@@ -64,17 +76,16 @@ const JobPage = () => {
       <h1>{job.title}</h1>
       <p><strong>Company:</strong> {job.company}</p>
       <p><strong>Location:</strong> {job.location}</p>
-      <p><strong>Description:</strong></p>
-      <p>{job.description}</p>
+      <p><strong>Description:</strong> {job.description}</p>
 
       {user ? (
         applied ? (
-          <p style={{ color: "green" }}>You have already applied to this job.</p>
+          <p style={{ color: "green" }}>You’ve already applied to this job.</p>
         ) : (
           <button onClick={handleApply}>Apply Now</button>
         )
       ) : (
-        <p><em>Please log in to apply.</em></p>
+        <p>Please <strong>log in</strong> to apply.</p>
       )}
     </div>
   );

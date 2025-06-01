@@ -29,7 +29,7 @@ export default function App() {
           path="/admin"
           element={
             <RequireAdmin>
-              <AdminJobs /> {/* your admin job management component */}
+              <AdminJobs />
             </RequireAdmin>
           }
         />
