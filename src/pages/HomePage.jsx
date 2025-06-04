@@ -1,19 +1,18 @@
 import React, { useEffect, useState } from "react";
-import {
-  collection,
-  getDocs,
-  query,
-  where,
-  addDoc,
-  serverTimestamp,
-} from "firebase/firestore";
+import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../services/firebase";
 import { useAuth } from "../features/auth/AuthContext";
+import { Link } from "react-router-dom";
+import PageTop from "../components/PageTop";
+import "../styles/HomePage.css";
 
 const HomePage = () => {
   const { user } = useAuth();
   const [jobs, setJobs] = useState([]);
   const [appliedJobs, setAppliedJobs] = useState([]);
+  const [titleSearch, setTitleSearch] = useState("");
+  const [locationSearch, setLocationSearch] = useState("");
+  const [filteredJobs, setFilteredJobs] = useState([]);
 
   useEffect(() => {
     const fetchJobs = async () => {
@@ -24,6 +23,7 @@ const HomePage = () => {
         ...doc.data(),
       }));
       setJobs(jobList);
+      setFilteredJobs(jobList);
     };
 
     const fetchAppliedJobs = async () => {
@@ -44,52 +44,81 @@ const HomePage = () => {
     fetchAppliedJobs();
   }, [user]);
 
-  const handleApply = async (job) => {
-    if (!user) {
-      alert("Please log in to apply.");
-      return;
-    }
-
-    if (appliedJobs.includes(job.id)) {
-      alert("You have already applied to this job.");
-      return;
-    }
-
-    try {
-      await addDoc(collection(db, "applications"), {
-        userId: user.uid,
-        jobId: job.id,
-        jobTitle: job.title,
-        company: job.company,
-        appliedAt: serverTimestamp(),
-      });
-      setAppliedJobs((prev) => [...prev, job.id]);
-      alert("Application submitted successfully!");
-    } catch (error) {
-      console.error("Error applying:", error);
-      alert("Failed to apply. Please try again.");
-    }
-  };
+  // Filter jobs when search inputs change
+  useEffect(() => {
+    const filtered = jobs.filter((job) => {
+      const titleMatch = job.title
+        ?.toLowerCase()
+        .includes(titleSearch.trim().toLowerCase());
+      const locationMatch = job.location
+        ?.toLowerCase()
+        .includes(locationSearch.trim().toLowerCase());
+      return titleMatch && locationMatch;
+    });
+    setFilteredJobs(filtered);
+  }, [titleSearch, locationSearch, jobs]);
 
   return (
-    <div>
-      <h1>Job Listings</h1>
-      {jobs.map((job) => (
-        <div key={job.id}>
-          <h2>{job.title}</h2>
-          <p>{job.company}</p>
-          <p>{job.location}</p>
-          {user ? (
-            appliedJobs.includes(job.id) ? (
-              <p style={{ color: "green" }}>Already Applied</p>
-            ) : (
-              <button onClick={() => handleApply(job)}>Apply Now</button>
-            )
-          ) : (
-            <p>Please log in to apply.</p>
-          )}
+    <div className="HomePage-container">
+      <PageTop height={"70vh"} content={"Land on Your dream job"} />
+      <div className="HomePage-wrapper">
+        <div className="job-Search-Container">
+          <h1>Job Listings</h1>
+          <div
+            className="Job-Search-Wrapper"
+            style={{ display: "flex", gap: 12, marginBottom: 20 }}
+          >
+            <input
+              type="text"
+              placeholder="Search job title"
+              value={titleSearch}
+              onChange={(e) => setTitleSearch(e.target.value)}
+              style={{ flex: 1, padding: 10, fontSize: 16 }}
+            />
+            <input
+              type="text"
+              placeholder="Search location"
+              value={locationSearch}
+              onChange={(e) => setLocationSearch(e.target.value)}
+              style={{ flex: 1, padding: 10, fontSize: 16 }}
+            />
+          </div>
         </div>
-      ))}
+
+        {filteredJobs.length === 0 && (
+          <p>No jobs found matching your criteria.</p>
+        )}
+
+        <div className="Job-list-wrapper">
+          {filteredJobs.map((job) => (
+            <div key={job.id} className="job-card">
+              <h2>{job.title}</h2>
+              <p>
+                <strong>Company:</strong> {job.company}
+              </p>
+              <p>
+                <strong>Location:</strong> {job.location}
+              </p>
+              {user ? (
+                appliedJobs.includes(job.id) ? (
+                  <p style={{ color: "green" }}>Already Applied</p>
+                ) : (
+                  <button>
+                    <Link
+                      to={`/apply/${job.id}`}
+                      style={{ textDecoration: "none", color: "inherit" }}
+                    >
+                      Apply Now
+                    </Link>
+                  </button>
+                )
+              ) : (
+                <p>Please log in to apply.</p>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 };

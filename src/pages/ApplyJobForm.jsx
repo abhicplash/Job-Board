@@ -1,100 +1,179 @@
 import React, { useState } from "react";
+import "../styles/ApplyJobForm.css";
 import { useAuth } from "../features/auth/AuthContext";
-import { db, storage } from "../services/firebase";
-import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { db } from "../services/firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
 const ApplyJobForm = ({ jobId }) => {
   const { user } = useAuth();
+
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState(user?.email || "");
+  const [phone, setPhone] = useState("");
   const [coverLetter, setCoverLetter] = useState("");
-  const [resumeFile, setResumeFile] = useState(null);
-  const [uploadProgress, setUploadProgress] = useState(0);
+  const [skillsInput, setSkillsInput] = useState("");
+  const [skills, setSkills] = useState([]);
+  const [experience, setExperience] = useState("");
+
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleFileChange = (e) => {
-    if (e.target.files[0]) {
-      setResumeFile(e.target.files[0]);
-    }
+  const isValidEmail = (email) =>
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+
+  const isValidPhone = (phone) =>
+    phone === "" || /^\+?[0-9\s\-]{7,15}$/.test(phone.trim());
+
+  const isValidCoverLetter = coverLetter.length <= 1000;
+
+  const isFormValid =
+    fullName.trim().length > 0 &&
+    isValidEmail(email) &&
+    isValidPhone(phone) &&
+    isValidCoverLetter;
+
+  const handleSkillsChange = (e) => {
+    setSkillsInput(e.target.value);
+    const skillsArray = e.target.value
+      .split(",")
+      .map((skill) => skill.trim())
+      .filter(Boolean);
+    setSkills(skillsArray);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(null);
-    setSuccess(false);
 
-    if (!resumeFile) {
-      setError("Please upload your resume.");
+    if (!isFormValid) {
+      setError("Please fill all required fields correctly.");
       return;
     }
 
+    setError(null);
+    setSuccess(false);
+    setIsSubmitting(true);
+
     try {
-      // Upload resume to Firebase Storage
-      const storageRef = ref(storage, `resumes/${user.uid}/${resumeFile.name}`);
-      const uploadTask = uploadBytesResumable(storageRef, resumeFile);
+      await addDoc(collection(db, "applications"), {
+        userId: user.uid,
+        jobId,
+        fullName: fullName.trim(),
+        email: email.trim(),
+        phone: phone.trim(),
+        coverLetter: coverLetter.trim(),
+        skills,
+        experience: experience.trim(),
+        appliedAt: serverTimestamp(),
+      });
 
-      uploadTask.on(
-        "state_changed",
-        (snapshot) => {
-          const progress = Math.round(
-            (snapshot.bytesTransferred / snapshot.totalBytes) * 100
-          );
-          setUploadProgress(progress);
-        },
-        (error) => {
-          setError(error.message);
-        },
-        async () => {
-          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+      setSuccess(true);
+      setFullName("");
+      setEmail(user?.email || "");
+      setPhone("");
+      setCoverLetter("");
+      setSkillsInput("");
+      setSkills([]);
+      setExperience("");
 
-          // Save application to Firestore
-          await addDoc(collection(db, "applications"), {
-            userId: user.uid,
-            jobId,
-            coverLetter,
-            resumeUrl: downloadURL,
-            appliedAt: serverTimestamp(),
-          });
-
-          setSuccess(true);
-          setCoverLetter("");
-          setResumeFile(null);
-          setUploadProgress(0);
-        }
-      );
+      setTimeout(() => setSuccess(false), 4000);
     } catch (err) {
-      setError(err.message);
+      setError("Failed to submit application. Please try again.");
+      console.error(err);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <h3>Apply for this job</h3>
+    <form onSubmit={handleSubmit} className="apply-form">
+      <h3 className="apply-text-head">Apply for this job</h3>
 
-      <label>
-        Cover Letter (optional)
-        <textarea
-          value={coverLetter}
-          onChange={(e) => setCoverLetter(e.target.value)}
-          placeholder="Write your cover letter here"
-        />
+      <label htmlFor="fullName">
+        Full Name <span className="required">*</span>
       </label>
+      <input
+        id="fullName"
+        type="text"
+        value={fullName}
+        onChange={(e) => setFullName(e.target.value)}
+        placeholder="Your full name"
+        disabled={isSubmitting}
+        required
+      />
 
-      <label>
-        Upload Resume *
-        <input
-          type="file"
-          accept=".pdf,.doc,.docx"
-          onChange={handleFileChange}
-        />
+      <label htmlFor="email">
+        Email <span className="required">*</span>
       </label>
+      <input
+        id="email"
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        placeholder="you@example.com"
+        disabled={isSubmitting}
+        required
+      />
+      {!isValidEmail(email) && email.length > 0 && (
+        <p className="error">Please enter a valid email address.</p>
+      )}
 
-      {uploadProgress > 0 && <p>Uploading: {uploadProgress}%</p>}
+      <label htmlFor="phone">Phone Number (optional)</label>
+      <input
+        id="phone"
+        type="tel"
+        value={phone}
+        onChange={(e) => setPhone(e.target.value)}
+        placeholder="+91-"
+        disabled={isSubmitting}
+      />
+      {!isValidPhone(phone) && phone.length > 0 && (
+        <p className="error">Please enter a valid phone number.</p>
+      )}
 
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      {success && <p style={{ color: "green" }}>Application submitted!</p>}
+      <label htmlFor="skills">Skills (comma separated)</label>
+      <input
+        id="skills"
+        type="text"
+        value={skillsInput}
+        onChange={handleSkillsChange}
+        placeholder="e.g. JavaScript, React, CSS"
+        disabled={isSubmitting}
+      />
 
-      <button type="submit">Submit Application</button>
+      <label htmlFor="experience">Experience</label>
+      <textarea
+        id="experience"
+        value={experience}
+        onChange={(e) => setExperience(e.target.value)}
+        placeholder="Describe your work experience here"
+        rows={5}
+        disabled={isSubmitting}
+      />
+
+      <label htmlFor="coverLetter">Cover Letter (optional)</label>
+      <textarea
+        id="coverLetter"
+        value={coverLetter}
+        onChange={(e) => setCoverLetter(e.target.value)}
+        placeholder="Write your cover letter here"
+        maxLength={1000}
+        rows={6}
+        disabled={isSubmitting}
+      />
+      <div className="char-count">{coverLetter.length} / 1000 characters</div>
+
+      {error && <p className="error">{error}</p>}
+      {success && <p className="success">Application submitted!</p>}
+
+      <button
+        type="submit"
+        disabled={isSubmitting || !isFormValid}
+        className="submit-btn"
+        aria-busy={isSubmitting}
+      >
+        {isSubmitting ? "Submitting..." : "Submit Application"}
+      </button>
     </form>
   );
 };

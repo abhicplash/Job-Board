@@ -1,0 +1,105 @@
+.adminPage-wrapper {
+  /* display: flex; */
+  /* justify-content: center; */
+  /* align-items: center; */
+  /* padding: 2rem 0; */
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 5rem 0;
+}
+.admin-container {
+  width: 55%;
+  margin: 0 auto;
+  padding: 20px;
+  background: #fefefe;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+@media (max-width: 768px) {
+  .admin-container {
+    width: 85%;
+  }
+}
+.admin-title {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.admin-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 30px;
+}
+
+.admin-form input,
+.admin-form textarea {
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.admin-form textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.button-group {
+  display: flex;
+  gap: 10px;
+}
+
+button {
+  padding: 10px 15px;
+  background-color: #007bff;
+  border: none;
+  border-radius: 4px;
+  color: #fff;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+.cancel-btn {
+  background-color: #999;
+}
+
+.cancel-btn:hover {
+  background-color: #666;
+}
+
+.job-list {
+  list-style: none;
+  padding: 0;
+}
+
+.job-item {
+  padding: 12px;
+  border-bottom: 1px solid #ddd;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.job-details {
+  flex: 1;
+}
+
+.job-actions button {
+  margin-left: 10px;
+}
+
+.delete-btn {
+  background-color: #e53935;
+}
+
+.delete-btn:hover {
+  background-color: #c62828;
+}

@@ -1,0 +1,47 @@
+.job-Search-Container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+.Job-Search-Wrapper {
+  display: flex;
+  /* flex-wrap: wrap; */
+  justify-content: center;
+  align-items: center;
+  width: 60%;
+  /* border: 1px solid red; */
+}
+.Job-Search-Wrapper input {
+  font-family: inherit;
+}
+.Job-list-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  padding: 3rem 0;
+}
+.job-card {
+  background-color: #fff;
+  width: 14rem;
+  height: 14rem;
+  padding: 1rem;
+}
+@media (max-width: 768px) {
+  .Job-Search-Wrapper {
+    flex-direction: column;
+  }
+  .Job-Search-Wrapper {
+    width: 90%;
+  }
+  .Job-Search-Wrapper input {
+    width: 90%;
+  }
+  .job-card {
+    background-color: var(--bg);
+  }
+}

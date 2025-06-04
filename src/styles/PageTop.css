@@ -1,0 +1,20 @@
+.pageTop-container {
+  width: 100%;
+  /* min-height: 70vh; */
+  /* background-color: black; */
+  background: url("../assets//banner/pagetop.jpg");
+  background-position: center;
+  background-size: cover;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-transform: capitalize;
+  font-size: 2rem;
+  color: var(--bg);
+  text-align: center;
+}
+@media (max-width: 768px) {
+  .pageTop-container {
+    font-size: 1.5rem;
+  }
+}

@@ -2,8 +2,11 @@ import { useAuth } from "../features/auth/AuthContext";
 import { signOut } from "firebase/auth";
 import { auth } from "../services/firebase";
 import { useNavigate, Link } from "react-router-dom";
+import "../styles/Navbar.css";
+import { FaBars } from "react-icons/fa";
+import { useState } from "react";
 
-export default function Navbar() {
+function Navbar() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -16,36 +19,99 @@ export default function Navbar() {
     }
   };
 
+  const [view, setView] = useState(false);
+
   return (
-    <nav style={{ padding: "10px", borderBottom: "1px solid #ccc" }}>
-      <Link to="/" style={{ marginRight: "15px" }}>
-        Home
-      </Link>
+    <div className="NavWrapper">
+      <nav>
+        <h1>
+          <Link to="/">JOB</Link>
+        </h1>
 
-      {user ? (
-        <>
-          <span style={{ marginRight: "15px" }}>Welcome, {user.email}</span>
-          <Link to="/dashboard" style={{ marginRight: "15px" }}>
-            Dashboard
-          </Link>
+        <div className="navInfoWrapper">
+          {user ? (
+            <>
+              <span style={{ marginRight: "15px" }}>
+                Welcome, {user.displayName || user.email}
+              </span>
+              <Link to="/dashboard" style={{ marginRight: "15px" }}>
+                Dashboard
+              </Link>
 
-          {/* Show admin link if user.isAdmin === true */}
-          {user.isAdmin && (
-            <Link to="/admin" style={{ marginRight: "15px" }}>
-              Admin Panel
-            </Link>
+              {user.isAdmin && (
+                <Link to="/admin" style={{ marginRight: "15px" }}>
+                  Admin Panel
+                </Link>
+              )}
+
+              <button  className="nav-button" onClick={handleLogout}>Logout</button>
+            </>
+          ) : (
+            <>
+              <Link to="/login" style={{ marginRight: "10px" }}>
+                Login
+              </Link>
+              <Link to="/signup">Sign Up</Link>
+            </>
           )}
+        </div>
+        {view ? (
+          <div className="navInfoWrapper-mob">
+            {user ? (
+              <>
+                <span style={{ marginRight: "15px" }}>
+                  Welcome, {user.displayName || user.email}
+                </span>
+                <Link
+                  onClick={() => {
+                    setView(!view);
+                  }}
+                  to="/dashboard"
+                  style={{ marginRight: "15px" }}
+                >
+                  Dashboard
+                </Link>
 
-          <button onClick={handleLogout}>Logout</button>
-        </>
-      ) : (
-        <>
-          <Link to="/login" style={{ marginRight: "10px" }}>
-            Login
-          </Link>
-          <Link to="/signup">Sign Up</Link>
-        </>
-      )}
-    </nav>
+                {user.isAdmin && (
+                  <Link
+                    onClick={() => {
+                      setView(!view);
+                    }}
+                    to="/admin"
+                    style={{ marginRight: "15px" }}
+                  >
+                    Admin Panel
+                  </Link>
+                )}
+
+                <button className="nav-button" onClick={handleLogout}>Logout</button>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/login"
+                  onClick={() => {
+                    setView(!view);
+                  }}
+                  style={{ marginRight: "10px" }}
+                >
+                  Login
+                </Link>
+                <Link
+                  to="/signup"
+                  onClick={() => {
+                    setView(!view);
+                  }}
+                >
+                  Sign Up
+                </Link>
+              </>
+            )}
+          </div>
+        ) : null}
+        <FaBars className="navIcon" onClick={() => setView(!view)} />
+      </nav>
+    </div>
   );
 }
+export default Navbar;

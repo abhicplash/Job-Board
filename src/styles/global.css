@@ -1,11 +1,49 @@
+@import url("https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&display=swap");
 body {
-  font-family: Arial, sans-serif;
+  font-family: "Oswald", sans-serif;
   margin: 0;
-  background: #f5f5f5;
+  background: #d3d3d3;
 }
 
 .container {
   max-width: 960px;
   margin: 0 auto;
   padding: 1rem;
+}
+a {
+  text-decoration: none;
+}
+:root {
+  --green: #02a34a;
+  --primary: #4a5a6a;
+  --Secondary: #d3d3d3;
+  --Accent: #ff6f61;
+  --text: #333333;
+  --bg: #ffffffcc;
+  --black: #000;
+}
+
+textarea,
+input ,button{
+  font-family: inherit;
+}
+.Login-container {
+  /* padding: 3.4rem 0; */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+.Login-container p {
+  text-align: center;
+  color: var(--primary);
+}
+.Login-container p a {
+  color: var(--black);
+}
+
+.job-title {
+  color: var(--text);
+  text-align: center;
 }

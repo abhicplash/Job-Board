@@ -8,8 +8,11 @@ import PrivateRoute from "./routes/PrivateRoute";
 import Dashboard from "./pages/Dashboard";
 import AdminJobs from "./pages/AdminJobs";
 import RequireAdmin from "./components/RequireAdmin";
+import ApplyJob from "./pages/ApplyJob";
+
 
 export default function App() {
+  
   return (
     <>
       <Navbar />
@@ -17,6 +20,7 @@ export default function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
+        <Route path="/apply/:jobId" element={<ApplyJob />} />
         <Route
           path="/jobs/:id"
           element={

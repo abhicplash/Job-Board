@@ -1,9 +1,10 @@
 import { Link } from "react-router-dom";
 import LoginForm from "../features/auth/LoginForm";
+import "../styles/global.css";
 
-export default function LoginPage() {
+function LoginPage() {
   return (
-    <div className="container">
+    <div className="Login-container">
       <LoginForm />
       <p>
         Don't have an account? <Link to="/signup">Sign Up</Link>
@@ -11,3 +12,5 @@ export default function LoginPage() {
     </div>
   );
 }
+
+export default LoginPage;
