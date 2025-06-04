@@ -1,4 +1,4 @@
-# 🛠️ Admin Job Management Dashboard
+# 🛠️ Job Management 
 
 A simple and efficient admin dashboard built with **React** and **Firebase Firestore** to manage job listings. Admins can **add**, **edit**, **delete**, and **view** jobs in real-time with secure email-based access control.
 
