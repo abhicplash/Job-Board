@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import "./auth.css";
 
 export default function SignupForm() {
-  const [name, setName] = useState(""); // <-- New name state
+  const [name, setName] = useState(""); 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -20,7 +20,7 @@ export default function SignupForm() {
         email,
         password
       );
-      // Update displayName after signup
+      
       await updateProfile(userCredential.user, { displayName: name });
       navigate("/");
     } catch (err) {

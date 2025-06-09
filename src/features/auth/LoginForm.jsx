@@ -21,6 +21,7 @@ export default function LoginForm() {
   };
 
   return (
+    
     <form onSubmit={handleLogin} className="auth-form">
       <h2>Login</h2>
       {error && <p className="auth-error">{error}</p>}
